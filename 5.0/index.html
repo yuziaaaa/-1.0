@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户中心 - 多区服管理</title>
+    <script src="../tailwind.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e6f7ff 50%, #d1ebff 100%);
+        }
+
+        .info-card {
+            transition: all 0.3s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(79, 70, 229, 0.1);
+        }
+
+        .loader {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(79, 70, 229, 0.2);
+            border-radius: 50%;
+            border-top-color: #4F46E5;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 自动消失弹窗样式 */
+        #autoCloseModal {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        #modalInner {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        #autoCloseModal.show #modalInner {
+            scale: 1;
+            opacity: 1;
+        }
+
+        #modalIcon.success {
+            color: #10B981;
+        }
+
+        #modalIcon.error {
+            color: #EF4444;
+            animation: shake 0.5s ease;
+        }
+
+        #modalIcon.warning {
+            color: #F59E0B;
+        }
+
+        #modalIcon.info {
+            color: #3B82F6;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-4px);
+            }
+
+            75% {
+                transform: translateX(4px);
+            }
+        }
+
+        @media (prefers-color-scheme: dark) {
+            #autoCloseModal {
+                background-color: rgba(0, 0, 0, 0.2);
+            }
+
+            #modalInner {
+                background-color: #1f2937;
+                border-color: #374151;
+            }
+
+            #modalText {
+                color: #f9fafb;
+            }
+        }
+
+        .empty-state {
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            text-align: center;
+            padding: 2rem 1rem;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .empty-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.75rem;
+            color: #94a3b8;
+        }
+
+        #renewalModal.show {
+            display: flex;
+        }
+
+        #renewalModal.show #modalContent {
+            scale: 1;
+            opacity: 1;
+        }
+
+        .form-input-focus:focus {
+            border-color: #4F46E5;
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+            outline: none;
+        }
+
+        .btn-loading {
+            position: relative;
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        .btn-loading .loader {
+            width: 16px;
+            height: 16px;
+            margin-right: 6px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            #modalContent {
+                background-color: #1f2937;
+                border-color: #374151;
+            }
+
+            #modalContent h3,
+            #modalContent label,
+            #modalContent .text-gray-700 {
+                color: #f9fafb;
+            }
+
+            #modalContent .text-gray-500,
+            #modalContent .text-gray-400 {
+                color: #d1d5db;
+            }
+
+            #modalContent .bg-gray-50 {
+                background-color: #374151;
+            }
+
+            #modalContent input {
+                background-color: #374151;
+                border-color: #4b5563;
+
+                #modalContent input::placeholder {
+                    color: #9ca3af;
+                }
+            }
+        }
+    </style>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#7C3AED',
+                        success: '#10B981',
+                        error: '#EF4444',
+                        info: '#3B82F6',
+                        warning: '#F59E0B'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="gradient-bg min-h-screen font-sans p-4">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white rounded-lg shadow-sm mb-6 p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center">
+                <i class="fa fa-user-circle text-primary text-xl mr-2"></i>
+                <h1 class="text-lg font-semibold text-gray-800">5.0用户中心</h1>
+            </div>
+            <div id="currentAccount" class="text-sm text-gray-600">
+                <span class="loader inline-block mr-2"></span>加载中...
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto max-w-4xl">
+        <!-- 状态提示区域 -->
+        <div id="statusMsg" class="mb-6 rounded-lg p-4 msg-transition hidden bg-white shadow-sm">
+            <i id="statusIcon" class="fa fa-info-circle mr-2"></i>
+            <span id="statusText">加载中...</span>
+        </div>
+
+        <!-- 多区服数据列表 -->
+        <div id="multiServerList" class="mb-6 hidden">
+            <!-- 账号总览 -->
+            <div class="bg-white rounded-xl shadow-sm p-4 mb-4">
+                <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                    <i class="fa fa-user-o text-primary mr-2"></i>账号总览
+                </h2>
+                <div class="flex flex-wrap gap-4 mt-2">
+                    <div>
+                        <p class="text-xs text-gray-500">登录账号</p>
+                        <p id="totalAccount" class="text-gray-800 font-medium">-</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500">关联区服总数</p>
+                        <p id="totalServerCount" class="text-gray-800 font-medium">-</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500">已领取月卡区服</p>
+                        <p id="totalMonthlyCardServers" class="text-gray-800 font-medium">-</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 区服卡片列表 -->
+            <div id="serverCardsContainer" class="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-4">
+                <!-- 区服卡片会通过JS循环插入 -->
+            </div>
+
+            <!-- 空状态 -->
+            <div id="emptyState" class="empty-state hidden">
+                <i class="fa fa-server empty-icon"></i>
+                <p class="text-gray-500">暂无关联区服数据</p>
+                <p class="text-xs text-gray-400 mt-1">请联系管理员添加区服后可查看签到、周礼包及月卡状态</p>
+            </div>
+        </div>
+
+        <!-- 操作按钮区域 -->
+        <div id="actionButtons" class="flex flex-wrap gap-3 mb-8 items-center hidden">
+            <button id="refreshBtn"
+                class="flex items-center px-4 py-2 bg-primary/10 text-primary rounded-lg text-sm font-medium hover:bg-primary/20 transition-colors">
+                <i class="fa fa-refresh mr-1"></i> 刷新数据
+            </button>
+            <button id="renewalAccountBtn"
+                class="flex items-center px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
+                <i class="fa fa-calendar-check-o mr-1"></i> 账号续费
+            </button>
+
+            <button id="logoutBtn"
+                class="flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
+                <i class="fa fa-sign-out mr-1"></i> 退出登录
+            </button>
+        </div>
+        <!-- 加载中占位 -->
+        <div id="loadingPlaceholder" class="bg-white rounded-xl shadow-sm empty-state">
+            <div class="loader mb-3"></div>
+            <p class="text-gray-500">正在获取用户数据...</p>
+            <p class="text-xs text-gray-400 mt-1">若长时间无响应，请检查URL参数是否正确</p>
+        </div>
+
+        <!-- 续费弹窗 -->
+        <div id="renewalModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-xl shadow-lg w-full max-w-md mx-4 transform transition-all duration-300 scale-95 opacity-0"
+                id="modalContent">
+                <div class="flex justify-between items-center p-5 border-b border-gray-100">
+                    <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                        <i class="fa fa-calendar-plus-o text-primary mr-2"></i>自动签到续费
+                    </h3>
+                    <button id="closeModalBtn" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <i class="fa fa-times text-lg"></i>
+                    </button>
+                </div>
+
+                <div class="p-5 space-y-4">
+                    <div>
+                        <label for="cardCode" class="block text-gray-700 text-sm font-medium mb-1.5">
+                            续费卡密 <span class="text-error">*</span>
+                        </label>
+                        <div class="relative">
+                            <i class="fa fa-key text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                            <input type="text" id="cardCode" placeholder="请输入16位卡密（支持自动分割）"
+                                class="w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+                                maxlength="19">
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">格式示例：ABCD-EFGH-IJKL-MNOP</p>
+                    </div>
+
+                    <div class="text-xs text-gray-500 bg-gray-50 p-2.5 rounded-lg">
+                        <p><i class="fa fa-user-circle text-info mr-1"></i> 当前续费账号：<span id="currentAccountText"
+                                class="font-medium">加载中...</span></p>
+                        <p><i class="fa fa-server text-info mr-1"></i> 关联区服数量：<span id="totalServersText"
+                                class="font-medium">加载中...</span></p>
+                        <p><i class="fa fa-exclamation-circle text-warning mr-1"></i> 提示：卡密验证成功后，所有区服有效期将同步延长</p>
+                    </div>
+                </div>
+
+                <div class="p-4 border-t border-gray-100 flex gap-3 justify-end">
+                    <button id="cancelRenewalBtn"
+                        class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
+                        取消
+                    </button>
+                    <button id="confirmRenewalBtn"
+                        class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
+                        验证并续费
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 自动消失的居中弹窗 -->
+    <div id="autoCloseModal" class="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
+        <div id="modalInner"
+            class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 max-w-sm w-full mx-4 transform transition-all duration-300 scale-95 opacity-0">
+            <div id="modalIcon" class="text-center mb-2 text-xl"></div>
+            <div id="modalText" class="text-center text-gray-800 dark:text-white text-sm font-medium"></div>
+        </div>
+    </div>
+
+    <footer class="container mx-auto max-w-4xl text-center text-xs text-gray-400 mt-8">
+        <p>© 2025 用户中心|作者阿煜|联系方式|微信:18768577663|QQ:2237423680</p>
+    </footer>
+
+    <script>
+        // 配置常量 —— 已修复！
+        const CONFIG = {
+    USER_DATA_API: "/api/user/getData",
+    RENEWAL_API: "/api/user/renewal"
+};
+
+        // DOM元素缓存
+        const DOM = {
+            autoCloseModal: document.getElementById("autoCloseModal"),
+            modalInner: document.getElementById("modalInner"),
+            modalIcon: document.getElementById("modalIcon"),
+            modalText: document.getElementById("modalText"),
+            actionButtons: document.getElementById("actionButtons"),
+            refreshBtn: document.getElementById("refreshBtn"),
+            renewalAccountBtn: document.getElementById("renewalAccountBtn"),
+            logoutBtn: document.getElementById("logoutBtn"),
+            serverCardsContainer: document.getElementById("serverCardsContainer"),
+            multiServerList: document.getElementById("multiServerList"),
+            loadingPlaceholder: document.getElementById("loadingPlaceholder"),
+            emptyState: document.getElementById("emptyState"),
+            totalAccount: document.getElementById("totalAccount"),
+            totalServerCount: document.getElementById("totalServerCount"),
+            totalMonthlyCardServers: document.getElementById("totalMonthlyCardServers"),
+            currentAccount: document.getElementById("currentAccount"),
+            renewalModal: document.getElementById("renewalModal"),
+            modalContent: document.getElementById("modalContent"),
+            closeModalBtn: document.getElementById("closeModalBtn"),
+            cardCodeInput: document.getElementById("cardCode"),
+            submitRenewalBtn: document.getElementById("confirmRenewalBtn"),
+            cancelRenewalBtn: document.getElementById("cancelRenewalBtn"),
+            currentAccountText: document.getElementById("currentAccountText"),
+            totalServersText: document.getElementById("totalServersText")
+        };
+
+        const GLOBAL_STATE = {
+            currentUserAccount: "",
+            currentRenewalAccount: null,
+            isLoading: false
+        };
+
+        function getUrlParam(key) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(key) || "";
+        }
+
+        function showStatus(type, text, duration = 2000) {
+            if (window.modalTimer) {
+                clearTimeout(window.modalTimer);
+            }
+
+            const iconMap = {
+                success: { class: "fa-check-circle success", text: "操作成功" },
+                error: { class: "fa-exclamation-circle error", text: "操作失败" },
+                warning: { class: "fa-exclamation-triangle warning", text: "提醒" },
+                info: { class: "fa-info-circle info", text: "提示" }
+            };
+            const { class: iconClass, text: titleText } = iconMap[type] || iconMap.info;
+
+            DOM.modalIcon.className = `fa ${iconClass} text-xl`;
+            DOM.modalText.innerHTML = `<span class="font-medium">${titleText}：</span>${text}`;
+            DOM.autoCloseModal.classList.add("show");
+
+            window.modalTimer = setTimeout(() => {
+                DOM.autoCloseModal.classList.remove("show");
+                DOM.modalIcon.className = "";
+                DOM.modalText.textContent = "";
+            }, duration);
+        }
+
+        function setBtnLoading(btnEl, isLoading) {
+            if (isLoading) {
+                btnEl.classList.add("btn-loading");
+                btnEl.disabled = true;
+                btnEl.dataset.originalText = btnEl.innerHTML;
+                btnEl.innerHTML = `<span class="loader inline-block mr-2"></span>处理中...`;
+            } else {
+                btnEl.classList.remove("btn-loading");
+                btnEl.disabled = false;
+                if (btnEl.dataset.originalText) {
+                    btnEl.innerHTML = btnEl.dataset.originalText;
+                }
+            }
+        }
+
+        function formatTimestamp(timestamp) {
+            if (!timestamp || isNaN(timestamp)) return "未知时间";
+            const date = new Date(Number(timestamp));
+            return date.toLocaleString("zh-CN", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit"
+            });
+        }
+
+        function checkExpired(expireTime) {
+            if (!expireTime) return true;
+            const now = Date.now();
+            return Number(expireTime) < now;
+        }
+
+function renderServerCards(serverList) {
+    DOM.serverCardsContainer.innerHTML = "";
+
+    if (!serverList || serverList.length === 0) {
+        DOM.emptyState.classList.remove("hidden");
+        DOM.totalServerCount.textContent = "0";
+        DOM.totalMonthlyCardServers.textContent = "0";
+        return;
+    }
+
+    DOM.emptyState.classList.add("hidden");
+    DOM.totalServerCount.textContent = serverList.length;
+
+    const monthlyCardCount = serverList.filter(s => s.monthly_card_status === 1).length;
+    DOM.totalMonthlyCardServers.textContent = monthlyCardCount;
+
+    serverList.forEach((server) => {
+        const isExpired = checkExpired(server.auto_sign_expire_time);
+        const expiredClass = isExpired ? "bg-red-50 border-red-200" : "bg-white border-gray-200";
+        const expiredTextClass = isExpired ? "text-red-500" : "text-green-500";
+        const expiredStatusText = isExpired ? "已过期" : "正常";
+
+        const cardHtml = `
+        <div class="info-card ${expiredClass} border rounded-xl p-4 mb-4 w-full">
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-base font-semibold text-gray-800 flex items-center">
+                    <i class="fa fa-server ${isExpired ? "text-red-400" : "text-primary"} mr-2"></i>
+                    <span class="server-name">${server.server_name || "未知区服"}</span>
+                </h3>
+            </div>
+
+            <ul class="space-y-2 text-sm text-gray-700 mb-4">
+                <li class="flex justify-between">
+                    <span class="text-gray-500">角色ID：</span>
+                    <span class="font-medium">${server.user_id || "未知"}</span>
+                </li>
+                <li class="flex justify-between">
+                    <span class="text-gray-500">区服ID：</span>
+                    <span class="font-medium">${server.server_id || "未知"}</span>
+                </li>
+                <li class="flex justify-between">
+                    <span class="text-gray-500">签到状态：</span>
+                    <span class="${server.daily_sign_status === 1 ? "text-green-500" : "text-gray-500"}">
+                        ${server.daily_sign_status === 1 ? "已签到" : "未签到"}
+                    </span>
+                </li>
+                <li class="flex justify-between">
+                    <span class="text-gray-500">周礼包状态：</span>
+                    <span class="${server.weekly_gift_status === 1 ? "text-green-500" : "text-gray-500"}">
+                        ${server.weekly_gift_status === 1 ? "已领取" : "未领取"}
+                    </span>
+                </li>
+                <li class="flex justify-between">
+                    <span class="text-gray-500">超级月卡状态：</span>
+                    <span class="${server.monthly_card_status === 1 ? "text-green-500" : "text-gray-500"}">
+                        ${server.monthly_card_status === 1 ? "已领取" : "未领取"}
+                    </span> 
+                </li>
+                <li class="flex justify-between">
+                    <span class="text-gray-500">商道币余额：</span>
+                    <span class="text-primary font-medium">${server.balance_amount_text || "未获取"}</span>
+                </li>
+                <li class="flex justify-between">
+                    <span class="text-gray-500">今日最近一次尝试领取月卡：</span>
+                    <span>${server.last_monthly_card_time || '今日尚未领取月卡'}</span>
+                </li>
+                <li class="flex justify-between">
+                    <span class="text-gray-500">最后签到：</span>
+                    <span>${server.last_sign_time || "从未签到"}</span>
+                </li>
+                <li class="flex justify-between pt-2 border-t border-gray-100">
+                    <span class="text-gray-500">服务状态：</span>
+                    <span class="${expiredTextClass} font-medium">${expiredStatusText}</span>
+                </li>
+                <li class="flex justify-between">
+                    <span class="text-gray-500">有效期至：</span>
+                    <span class="${isExpired ? "line-through text-red-400" : "text-gray-700"}">
+                        ${formatTimestamp(server.auto_sign_expire_time)}
+                    </span>
+                </li>
+            </ul>
+        </div>
+        `;
+
+        DOM.serverCardsContainer.insertAdjacentHTML("beforeend", cardHtml);
+    });
+}
+
+        async function fetchUserData(userAccount) {
+            if (!userAccount) return { success: false, message: "账号参数缺失" };
+
+            try {
+                GLOBAL_STATE.isLoading = true;
+                setBtnLoading(DOM.refreshBtn, true);
+                showStatus("info", "正在加载数据...");
+
+                DOM.loadingPlaceholder.classList.remove("hidden");
+                DOM.multiServerList.classList.add("hidden");
+
+                const response = await fetch(`${CONFIG.USER_DATA_API}?user_account=${encodeURIComponent(userAccount)}`);
+                const result = await response.json();
+
+                if (!response.ok) throw new Error(result.message || "数据加载失败");
+                if (!result.success) throw new Error(result.message || "未查询到用户数据");
+
+                GLOBAL_STATE.currentUserAccount = userAccount;
+                DOM.currentAccount.textContent = userAccount;
+                DOM.totalAccount.textContent = userAccount;
+                renderServerCards(result.data);
+                DOM.multiServerList.classList.remove("hidden");
+                DOM.loadingPlaceholder.classList.add("hidden");
+                DOM.actionButtons.classList.remove("hidden");
+                showStatus("success", "数据加载成功！");
+
+                return { success: true, data: result.data };
+            } catch (error) {
+                showStatus("error", error.message || "数据加载异常，请重试");
+                DOM.multiServerList.classList.remove("hidden");
+                DOM.loadingPlaceholder.classList.add("hidden");
+                DOM.actionButtons.classList.add("hidden");
+                DOM.emptyState.classList.remove("hidden");
+                return { success: false, message: error.message };
+            } finally {
+                GLOBAL_STATE.isLoading = false;
+                setBtnLoading(DOM.refreshBtn, false);
+            }
+        }
+
+        async function submitAccountRenewal() {
+            const { user_account } = GLOBAL_STATE.currentRenewalAccount || {};
+            const cardCode = DOM.cardCodeInput.value.trim();
+
+            if (!user_account) {
+                showStatus("error", "续费账号信息异常，请关闭弹窗重试");
+                return { success: false };
+            }
+            const cardRegex = /^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
+            if (!cardCode) {
+                showStatus("warning", "请输入续费卡密");
+                DOM.cardCodeInput.focus();
+                return { success: false };
+            } else if (!cardRegex.test(cardCode)) {
+                showStatus("warning", "卡密格式错误，正确格式：XXXX-XXXX-XXXX-XXXX（每组4位字母/数字）");
+                DOM.cardCodeInput.focus();
+                return { success: false };
+            }
+
+            try {
+                setBtnLoading(DOM.submitRenewalBtn, true);
+                showStatus("info", "正在验证卡密并处理续费...");
+
+                const response = await fetch(CONFIG.RENEWAL_API, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ user_account, card_code: cardCode })
+                });
+
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    const errorMap = {
+                        "CARD_NOT_EXIST": "卡密不存在，请检查卡密是否正确",
+                        "CARD_ALREADY_USED": "卡密已被使用，无法重复续费",
+                        "CARD_EXPIRED": "卡密已过期，请使用有效卡密",
+                        "CARD_INVALID_STATUS": "卡密状态异常，无法使用",
+                        "USER_NOT_EXIST": "用户不存在，请检查账号是否正确"
+                    };
+                    const errorMsg = result.message || errorMap[result.code] || "续费失败，请重试";
+                    showStatus("error", errorMsg);
+                    throw new Error(errorMsg);
+                }
+
+                const successMsg = result.message || `续费成功！有效期延长${result.data.days}天`;
+                showStatus("success", successMsg);
+                closeRenewalModal();
+                DOM.cardCodeInput.value = "";
+                setTimeout(() => {
+                    fetchUserData(user_account);
+                }, 1500);
+
+                return { success: true, data: result.data };
+            } catch (error) {
+                console.error("续费异常：", error);
+                return { success: false, message: error.message };
+            } finally {
+                setBtnLoading(DOM.submitRenewalBtn, false);
+            }
+        }
+
+        function showRenewalModal() {
+            const userAccount = GLOBAL_STATE.currentUserAccount;
+            const serverCards = document.querySelectorAll("#serverCardsContainer .info-card");
+
+            if (!userAccount || serverCards.length === 0) {
+                showStatus("error", "暂无账号数据或区服数据，无法续费");
+                return;
+            }
+
+            GLOBAL_STATE.currentRenewalAccount = {
+                user_account: userAccount,
+                total_servers: serverCards.length
+            };
+
+            DOM.currentAccountText.textContent = userAccount;
+            DOM.totalServersText.textContent = serverCards.length;
+            DOM.cardCodeInput.value = "";
+            DOM.renewalModal.classList.add("show");
+            setTimeout(() => {
+                DOM.cardCodeInput.focus();
+            }, 300);
+        }
+
+        function closeRenewalModal() {
+            DOM.renewalModal.classList.remove("show");
+            GLOBAL_STATE.currentRenewalAccount = null;
+        }
+
+        function formatCardCodeInput() {
+            const input = DOM.cardCodeInput;
+            let value = input.value.trim();
+
+            value = value.replace(/[^A-Za-z0-9-]/g, "");
+            value = value.toUpperCase();
+            value = value.replace(/-+/g, "-");
+            value = value.replace(/^-|-$/g, "");
+
+            let formattedValue = "";
+            const pureValue = value.replace(/-/g, "");
+            for (let i = 0; i < pureValue.length; i++) {
+                if (i > 0 && i % 4 === 0) {
+                    formattedValue += "-";
+                }
+                formattedValue += pureValue[i];
+            }
+            if (formattedValue.length > 19) {
+                formattedValue = formattedValue.slice(0, 19);
+            }
+
+            const start = input.selectionStart;
+            const end = input.selectionEnd;
+            input.value = formattedValue;
+            input.setSelectionRange(start, end);
+        }
+
+        function handleLogout() {
+            if (confirm("确定要退出登录吗？")) {
+                localStorage.removeItem("userAccount");
+                window.location.href = "login.html";
+            }
+        }
+
+        function initPage() {
+            const userAccount = getUrlParam("user_account").trim();
+            if (!userAccount) {
+                showStatus("error", "未检测到登录账号，请先登录");
+                setTimeout(() => {
+                    window.location.href = "login.html";
+                }, 2000);
+                return;
+            }
+
+            fetchUserData(userAccount);
+
+            DOM.refreshBtn.addEventListener("click", () => {
+                if (!GLOBAL_STATE.isLoading) {
+                    fetchUserData(GLOBAL_STATE.currentUserAccount);
+                }
+            });
+
+            DOM.renewalAccountBtn.addEventListener("click", showRenewalModal);
+            DOM.closeModalBtn.addEventListener("click", closeRenewalModal);
+            DOM.cancelRenewalBtn.addEventListener("click", closeRenewalModal);
+
+            DOM.renewalModal.addEventListener("click", (e) => {
+                if (e.target === DOM.renewalModal) {
+                    closeRenewalModal();
+                }
+            });
+
+            DOM.cardCodeInput.addEventListener("input", formatCardCodeInput);
+            DOM.submitRenewalBtn.addEventListener("click", submitAccountRenewal);
+            DOM.logoutBtn.addEventListener("click", handleLogout);
+
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "Escape" && DOM.renewalModal.classList.contains("show")) {
+                    closeRenewalModal();
+                }
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", initPage);
+    </script>
+</body>
+
+</html>

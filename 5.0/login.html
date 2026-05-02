@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5.0用户登录</title>
+    <script src="../tailwind.min.js"></script>
+    <link rel="stylesheet" href="./font-awesome.min.css">
+
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e6f7ff 50%, #d1ebff 100%);
+        }
+
+        .form-input-focus {
+            transition: all 0.3s ease;
+        }
+
+        .form-input-focus:focus {
+            border-color: #4F46E5;
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+            outline: none;
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, #4F46E5, #7C3AED);
+            transition: all 0.3s ease;
+        }
+
+        .btn-login:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+        }
+
+        .btn-login:active {
+            transform: scale(0.98);
+        }
+
+        .btn-login:disabled {
+            background: linear-gradient(135deg, #94a3b8, #64748b);
+            transform: none;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        .msg-transition {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            transform: translateY(5px);
+        }
+
+        .msg-transition.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .account-hint {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+
+        .btn-register {
+            background: linear-gradient(135deg, #3B82F6, #60A5FA);
+            transition: all 0.3s ease;
+        }
+
+        .btn-register:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+        }
+
+        .btn-register:active {
+            transform: scale(0.98);
+        }
+
+        /* 教学视频按钮样式 */
+        .btn-tutorial {
+            background: linear-gradient(135deg, #10B981, #34D399);
+            transition: all 0.3s ease;
+        }
+
+        .btn-tutorial:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+        }
+
+        .btn-tutorial:active {
+            transform: scale(0.98);
+        }
+
+        /* 视频弹窗样式 */
+        .video-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .video-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            position: relative;
+            width: 90%;
+            max-width: 800px;
+            background-color: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .video-modal.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            background-color: #4F46E5;
+            color: #fff;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .close-modal:hover {
+            color: #e0e7ff;
+        }
+
+        .modal-body {
+            padding: 1rem;
+        }
+
+        /* 视频容器样式 */
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%;
+            /* 16:9 宽高比 */
+        }
+
+        .video-container video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+    </style>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#7C3AED',
+                        success: '#10B981',
+                        error: '#EF4444',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="gradient-bg min-h-screen flex items-center justify-center p-4 font-sans">
+    <div class="bg-white rounded-xl shadow-md w-full max-w-md overflow-hidden">
+        <div class="bg-gradient-to-r from-primary to-secondary p-6 text-center">
+            <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                <i class="fa fa-sign-in text-white text-xl"></i>
+            </div>
+            <h1 class="text-xl font-bold text-white">5.0用户登录</h1>
+            <p class="mt-1 text-blue-100 text-sm">输入账号即可进入系统</p>
+        </div>
+
+        <div class="p-6">
+            <form id="loginForm" class="space-y-5">
+                <div>
+                    <label for="account" class="block text-gray-700 text-sm font-medium mb-1.5">
+                        登录账号 <span class="text-error">*</span>
+                    </label>
+                    <div class="relative">
+                        <i class="fa fa-user-circle text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                        <input type="text" id="account" required placeholder="请输入您的登录账号"
+                            class="w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg form-input-focus"
+                            maxlength="32">
+                    </div>
+                    <p class="account-hint">
+                        <i class="fa fa-info-circle mr-1"></i>支持数字、字母、下划线（1-32位）
+                    </p>
+                    <p id="accountError" class="text-error text-xs mt-1 hidden">
+                        <i class="fa fa-exclamation-circle mr-1"></i>请输入有效的账号（1-32位，仅含数字、字母、下划线）
+                    </p>
+                </div>
+
+                <button type="submit" id="loginBtn"
+                    class="w-full btn-login text-white font-medium py-2.5 px-4 rounded-lg">
+                    登录并进入系统
+                </button>
+                <button type="button" id="registerBtn"
+                    class="w-full btn-register text-white font-medium py-2.5 px-4 rounded-lg">
+                    未开通自动签到服务点我
+                </button>
+                <button type="button" id="tutorialBtn"
+                    class="w-full btn-tutorial text-white font-medium py-2.5 px-4 rounded-lg">
+                    <i class="fa fa-play-circle mr-1"></i>查看教学视频
+                </button>
+                <div id="errorMsg" class="text-error text-center py-2.5 bg-error/10 rounded-lg hidden msg-transition">
+                    <i class="fa fa-exclamation-circle mr-1"></i><span id="errorText">登录失败，请重试</span>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- 视频弹窗 -->
+    <div id="videoModal" class="video-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>使用教程</span>
+                <button class="close-modal" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="video-container">
+                    <video controls poster="" id="tutorialVideo">
+                        <source src="教程.mp4" type="video/mp4">
+                        您的浏览器不支持HTML5视频播放
+                        </audio>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const loginForm = document.getElementById('loginForm');
+        const accountInput = document.getElementById('account');
+        const loginBtn = document.getElementById('loginBtn');
+        const accountError = document.getElementById('accountError');
+        const errorMsg = document.getElementById('errorMsg');
+        const errorText = document.getElementById('errorText');
+
+        // 账号格式验证规则
+        const ACCOUNT_REGEX = /^[0-9a-zA-Z_]{1,32}$/;
+        // 获取注册按钮元素
+        const registerBtn = document.getElementById('registerBtn');
+
+        // 注册按钮点击事件 - 跳转到注册页面
+        registerBtn.addEventListener('click', () => {
+            window.location.href = 'register.html';
+        });
+        // 实时验证账号格式
+        accountInput.addEventListener('input', () => {
+            const account = accountInput.value.trim();
+            if (account && !ACCOUNT_REGEX.test(account)) {
+                accountError.classList.remove('hidden');
+            } else {
+                accountError.classList.add('hidden');
+            }
+        });
+
+        // 聚焦输入框时隐藏错误提示
+        accountInput.addEventListener('focus', () => {
+            accountError.classList.add('hidden');
+            errorMsg.classList.add('hidden');
+        });
+
+        // 表单提交处理
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const account = accountInput.value.trim();
+
+            // 验证账号格式
+            if (!account) {
+                accountError.textContent = '<i class="fa fa-exclamation-circle mr-1"></i>请输入登录账号';
+                accountError.classList.remove('hidden');
+                return;
+            }
+
+            if (!ACCOUNT_REGEX.test(account)) {
+                accountError.textContent = '<i class="fa fa-exclamation-circle mr-1"></i>请输入有效的账号（1-32位，仅含数字、字母、下划线）';
+                accountError.classList.remove('hidden');
+                return;
+            }
+
+            // 处理登录状态
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i>跳转中...';
+
+            // 直接跳转至index页面，URL携带user_account参数
+            setTimeout(() => {
+                // 构建跳转URL（假设index.html与login.html在同一目录）
+                const indexUrl = `index.html?user_account=${encodeURIComponent(account)}`;
+                window.location.href = indexUrl;
+            }, 800); // 短暂延迟，让用户看到"跳转中"状态
+        });
+
+        // 页面加载后自动聚焦输入框
+        document.addEventListener('DOMContentLoaded', () => {
+            accountInput.focus();
+        });
+        // 教学视频弹窗控制
+        const tutorialBtn = document.getElementById('tutorialBtn');
+        const videoModal = document.getElementById('videoModal');
+        const closeModal = document.getElementById('closeModal');
+        const tutorialVideo = document.getElementById('tutorialVideo');
+
+        // 打开视频弹窗
+        tutorialBtn.addEventListener('click', () => {
+            videoModal.classList.add('active');
+            // 尝试播放视频
+            tutorialVideo.play().catch(err => {
+                console.log('视频自动播放失败:', err);
+            });
+            // 阻止页面滚动
+            document.body.style.overflow = 'hidden';
+        });
+
+        // 关闭视频弹窗
+        closeModal.addEventListener('click', () => {
+            videoModal.classList.remove('active');
+            tutorialVideo.pause();
+            // 恢复页面滚动
+            document.body.style.overflow = '';
+        });
+
+        // 点击弹窗外部关闭
+        videoModal.addEventListener('click', (e) => {
+            if (e.target === videoModal) {
+                videoModal.classList.remove('active');
+                tutorialVideo.pause();
+                document.body.style.overflow = '';
+            }
+        });
+
+        // 按ESC键关闭弹窗
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && videoModal.classList.contains('active')) {
+                videoModal.classList.remove('active');
+                tutorialVideo.pause();
+                document.body.style.overflow = '';
+            }
+        });
+    </script>
+
+</body>
+
+</html>

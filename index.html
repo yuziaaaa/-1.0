@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小煜脚本导航</title>
+    <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
+    <link rel="dns-prefetch" href="https://cdn.bootcdn.net">
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.bootcdn.net" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
+        media="print" onload="this.media='all'">
+    <noscript>
+        <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    </noscript>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF9F43', // 温暖橙色主调
+                        secondary: '#F76C5E', // 柔和粉色辅助色
+                        accent: '#66D2A0', // 清新绿色强调色
+                        warm: '#FFF5E6', // 温暖背景色
+                        light: '#FFFBF5' // 浅色背景
+                    },
+                    fontFamily: {
+                        rounded: ['"Nunito"', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .bg-warm-texture {
+                background-color: #FFF5E6;
+                background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffb870' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+            }
+            .card-warm {
+                background: linear-gradient(145deg, #ffffff 0%, #fff8ef 100%);
+                border: 1px solid #ffe8d0;
+            }
+            .card-shadow-warm {
+                box-shadow: 0 8px 25px -5px rgba(255, 159, 67, 0.15);
+            }
+            .link-warm {
+                transition: all 0.3s ease;
+            }
+            .link-warm:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 6px 15px -3px rgba(255, 159, 67, 0.2);
+            }
+            .game-card-hover {
+                transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+            .game-card-hover:hover {
+                transform: translateY(-6px);
+                box-shadow: 0 12px 30px -8px rgba(255, 159, 67, 0.25);
+            }
+            .decor-element {
+                position: absolute;
+                opacity: 0.5;
+                z-index: 0;
+            }
+            .donate-pulse {
+                animation: pulse 2s infinite;
+            }
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+                100% { transform: scale(1); }
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet"
+        media="print" onload="this.media='all'">
+    <noscript>
+        <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    </noscript>
+</head>
+
+<body class="font-rounded bg-warm-texture min-h-screen py-12 px-4 md:px-8 relative overflow-x-hidden">
+    <div class="decor-element top-10 left-5 text-primary/20 text-6xl">
+        <i class="fa fa-star"></i>
+    </div>
+    <div class="decor-element bottom-20 right-8 text-secondary/20 text-5xl">
+        <i class="fa fa-heart"></i>
+    </div>
+    <div class="decor-element top-1/3 right-10 text-accent/20 text-4xl">
+        <i class="fa fa-leaf"></i>
+    </div>
+    <header class="max-w-4xl mx-auto mb-8 text-center relative z-10">
+        <div class="inline-block mb-4 p-3 bg-white rounded-full shadow-md">
+            <i class="fa fa-gamepad text-3xl text-primary"></i>
+        </div>
+        <h1 class="text-[clamp(1.8rem,4vw,2.8rem)] font-bold text-gray-800 mb-3">
+            <span class="text-primary">小煜</span>脚本导航
+        </h1>
+        <p class="text-gray-600 text-lg max-w-2xl mx-auto mb-6">
+            这里整理了所有收集的游戏和相关的程序，点击游戏名称就能看到相关游戏与功能哦~
+        </p>
+        <!-- 搜索栏 -->
+        <div class="max-w-2xl mx-auto relative">
+            <div class="relative">
+                <input type="text" 
+                    id="searchInput"
+                    placeholder="搜索游戏名称、描述..." 
+                    class="w-full px-4 py-3 pl-12 pr-10 rounded-xl border-2 border-gray-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 text-gray-800 text-sm sm:text-base transition-all shadow-sm">
+                <i class="fa fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <button id="clearSearch" 
+                    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 hidden transition-opacity"
+                    onclick="clearSearch()">
+                    <i class="fa fa-times-circle text-lg"></i>
+                </button>
+            </div>
+            <div id="searchResultCount" class="mt-2 text-sm text-gray-500 text-center hidden"></div>
+        </div>
+    </header>
+    <main class="max-w-4xl mx-auto relative z-10">
+        <!-- 游戏列表动态加载区域 -->
+        <div id="gamesContainer"></div>
+        <div class="mb-10">
+            <div class="card-warm rounded-2xl p-6 card-shadow-warm game-card-hover">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                    <div class="text-center md:text-left">
+                        <div class="flex items-center justify-center md:justify-start gap-2 mb-2">
+                            <i class="fa fa-heart text-secondary text-xl donate-pulse"></i>
+                            <h2 class="text-2xl font-semibold text-gray-800">打赏小煜</h2>
+                        </div>
+                        <p class="text-gray-500 text-sm max-w-xs">您的支持是我持续开发的最大动力~</p>
+                    </div>
+                    <a href="http://ayugame.top/tip/" target="_blank"
+                        class="flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-secondary text-white py-3 px-8 rounded-xl link-warm donate-pulse">
+                        <i class="fa fa-coffee"></i>
+                        <span class="font-medium">立即打赏</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="text-center py-12 px-6 bg-white/70 rounded-2xl border border-white/50 card-shadow-warm">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
+                <i class="fa fa-star text-primary text-2xl"></i>
+            </div>
+            <p class="text-gray-600 mb-2">更多精彩游戏程序正在筹备中</p>
+            <p class="text-gray-500 text-sm">很快就会和大家见面啦~</p>
+        </div>
+    </main>
+    <footer class="max-w-4xl mx-auto mt-16 text-center text-gray-500 text-sm relative z-10">
+        <p>💖 2025 小煜脚本导航 | 用心开发每一个程序</p>
+        <br>
+        <div class="mb-4 md:mb-0">
+            <p>定制脚本联系方式</p>
+            <br>
+            <p class="text-gray-500 text-sm">&copy; 联系方式 微信：18768577663</p>
+            <br>
+            <p class="text-gray-500 text-sm">&copy; 联系方式 QQ：2237423680</p>
+            <br>
+            <p class="text-gray-500 text-sm">&copy; 联系方式 邮箱：2237423680@qq.com</p>
+        </div>
+    </footer>
+    <script>
+        let allGamesData = []; // 存储所有游戏数据
+        let filteredGamesData = []; // 存储过滤后的游戏数据
+
+        // 从 data.json 文件加载游戏数据
+        async function loadGamesData() {
+            try {
+                const response = await fetch('data.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                const data = await response.json();
+                allGamesData = data.games || [];
+                filteredGamesData = [...allGamesData];
+                renderGames();
+                
+                // 初始化搜索功能
+                initSearch();
+            } catch (error) {
+                console.error('加载游戏数据失败:', error);
+                showError('加载游戏数据失败，请刷新页面重试。请确保 data.json 文件存在。');
+            }
+        }
+
+        // 初始化搜索功能
+        function initSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const clearBtn = document.getElementById('clearSearch');
+            
+            // 实时搜索
+            searchInput.addEventListener('input', (e) => {
+                filterGames(e.target.value);
+            });
+
+            // 清空按钮显示/隐藏
+            searchInput.addEventListener('input', (e) => {
+                if (e.target.value.trim()) {
+                    clearBtn.classList.remove('hidden');
+                } else {
+                    clearBtn.classList.add('hidden');
+                }
+            });
+        }
+
+        // 清空搜索
+        function clearSearch() {
+            const searchInput = document.getElementById('searchInput');
+            searchInput.value = '';
+            document.getElementById('clearSearch').classList.add('hidden');
+            filterGames('');
+        }
+
+        // 过滤游戏
+        function filterGames(searchText) {
+            const keyword = searchText.trim().toLowerCase();
+            const resultCountDiv = document.getElementById('searchResultCount');
+            
+            if (!keyword) {
+                filteredGamesData = [...allGamesData];
+                resultCountDiv.classList.add('hidden');
+            } else {
+                // 搜索游戏名称、副标题、描述、标签、链接文本
+                filteredGamesData = allGamesData.filter(game => {
+                    const nameMatch = (game.name || '').toLowerCase().includes(keyword);
+                    const subtitleMatch = (game.subtitle || '').toLowerCase().includes(keyword);
+                    const descMatch = (game.description || '').toLowerCase().includes(keyword);
+                    const badgeMatch = (game.badge || '').toLowerCase().includes(keyword);
+                    const linksMatch = (game.links || []).some(link => 
+                        (link.text || '').toLowerCase().includes(keyword) ||
+                        (link.url || '').toLowerCase().includes(keyword)
+                    );
+                    return nameMatch || subtitleMatch || descMatch || badgeMatch || linksMatch;
+                });
+                
+                // 显示搜索结果数量
+                if (filteredGamesData.length === 0) {
+                    resultCountDiv.innerHTML = `<span class="text-gray-400">未找到匹配的游戏</span>`;
+                } else {
+                    resultCountDiv.innerHTML = `<span class="text-primary font-medium">找到 ${filteredGamesData.length} 个游戏</span>`;
+                }
+                resultCountDiv.classList.remove('hidden');
+            }
+            
+            renderGames();
+        }
+
+        // 渲染游戏列表
+        function renderGames() {
+            const container = document.getElementById('gamesContainer');
+            container.innerHTML = '';
+
+            if (filteredGamesData.length === 0) {
+                if (allGamesData.length === 0) {
+                    container.innerHTML = '<div class="text-center py-12 text-gray-500">暂无游戏数据</div>';
+                } else {
+                    container.innerHTML = '<div class="text-center py-12 text-gray-500">未找到匹配的游戏，请尝试其他关键词</div>';
+                }
+                return;
+            }
+
+            filteredGamesData.forEach((game, displayIndex) => {
+                const gameCard = createGameCard(game, displayIndex);
+                container.appendChild(gameCard);
+            });
+
+            // 初始化展开/收起功能
+            initToggleEvents();
+        }
+
+        // 创建游戏卡片
+        function createGameCard(game, index) {
+            const cardId = `gameCard_${index}`;
+            const linksId = `gameLinks_${index}`;
+            const iconId = `gameIcon_${index}`;
+
+            const div = document.createElement('div');
+            div.className = 'mb-10';
+            div.innerHTML = `
+                <div class="card-warm rounded-2xl p-6 card-shadow-warm game-card-hover cursor-pointer" id="${cardId}">
+                    <div class="flex flex-wrap justify-between items-center gap-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center p-1">
+                                <img src="${escapeHtml(game.icon || '')}" alt="${escapeHtml(game.name || '')}" 
+                                    class="w-full h-full object-contain" 
+                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="w-full h-full items-center justify-center hidden text-primary text-2xl">
+                                    <i class="fa fa-gamepad"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                    <h2 class="text-2xl font-semibold text-gray-800">
+                                        ${escapeHtml(game.name || '未命名游戏')}
+                                        ${game.subtitle ? '<br>' + escapeHtml(game.subtitle) : ''}
+                                    </h2>
+                                    ${game.badge ? `<span class="bg-${game.badgeColor || 'accent'}/20 text-${game.badgeColor || 'accent'} text-xs px-2 py-1 rounded-full">${escapeHtml(game.badge)}</span>` : ''}
+                                </div>
+                                <p class="text-gray-500 text-sm">${escapeHtml(game.description || '点击展开所有相关程序地址')}</p>
+                            </div>
+                        </div>
+                        <i class="fa fa-chevron-down text-gray-400 transition-transform duration-300" id="${iconId}"></i>
+                    </div>
+                    <div class="mt-6 grid gap-4 md:grid-cols-2 hidden" id="${linksId}">
+                        ${game.links && game.links.length > 0 
+                            ? game.links.map(link => `
+                                <a href="${escapeHtml(link.url || '#')}" target="_blank"
+                                    class="flex items-center justify-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary py-3 px-4 rounded-xl link-warm">
+                                    <i class="fa fa-${link.icon || 'home'}"></i>
+                                    <span>${escapeHtml(link.text || '链接')}</span>
+                                </a>
+                            `).join('')
+                            : '<div class="col-span-2 text-center text-gray-400 py-2">暂无链接</div>'
+                        }
+                    </div>
+                </div>
+            `;
+            return div;
+        }
+
+        // 初始化展开/收起事件
+        function initToggleEvents() {
+            filteredGamesData.forEach((game, index) => {
+                const cardId = `gameCard_${index}`;
+                const linksId = `gameLinks_${index}`;
+                const iconId = `gameIcon_${index}`;
+
+                const card = document.getElementById(cardId);
+                const links = document.getElementById(linksId);
+                const icon = document.getElementById(iconId);
+
+                if (!card || !links || !icon) return;
+
+                card.addEventListener('click', () => {
+                    if (links.classList.contains('hidden')) {
+                        links.classList.remove('hidden');
+                        links.style.maxHeight = '0';
+                        setTimeout(() => {
+                            links.style.maxHeight = links.scrollHeight + 'px';
+                            links.style.overflow = 'hidden';
+                            links.style.transition = 'max-height 0.5s ease';
+                        }, 10);
+                    } else {
+                        links.style.maxHeight = '0';
+                        links.addEventListener('transitionend', () => {
+                            links.classList.add('hidden');
+                            links.style.maxHeight = '';
+                            links.style.overflow = '';
+                            links.style.transition = '';
+                        }, { once: true });
+                    }
+                    icon.classList.toggle('rotate-180');
+                });
+
+                // 阻止链接点击事件冒泡
+                links.querySelectorAll('a').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                    });
+                });
+            });
+        }
+
+        // HTML转义
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return String(text).replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // 显示错误信息
+        function showError(message) {
+            const container = document.getElementById('gamesContainer');
+            container.innerHTML = `
+                <div class="text-center py-12 px-6 bg-white/70 rounded-2xl border border-red-200">
+                    <i class="fa fa-exclamation-triangle text-red-500 text-3xl mb-3"></i>
+                    <p class="text-red-600">${escapeHtml(message)}</p>
+                </div>
+            `;
+        }
+
+        // 页面加载时初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            loadGamesData();
+        });
+
+        window.addEventListener('load', () => {
+            document.body.classList.add('opacity-100');
+            document.body.classList.remove('opacity-0');
+        });
+    </script>
+</body>
+
+</html>
+</html>
